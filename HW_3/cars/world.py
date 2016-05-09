@@ -92,7 +92,7 @@ class SimpleCarWorld(World):
             next_agent_state, collision = self.physics.move(
                 self.agent_states[a], action
             )
-            self.circles[a] += angle(self.agent_states[a].position, next_agent_state.position)
+            self.circles[a] += angle(self.agent_states[a].position, next_agent_state.position) / (2*pi)
             self.agent_states[a] = next_agent_state
             a.receive_feedback(self.reward(next_agent_state, collision))
 
@@ -154,7 +154,7 @@ class SimpleCarWorld(World):
             next_agent_state, collision = self.physics.move(
                 self.agent_states[agent], action
             )
-            self.circles[agent] += angle(self.agent_states[agent].position, next_agent_state.position)
+            self.circles[agent] += angle(self.agent_states[agent].position, next_agent_state.position) / (2*pi)
             self.agent_states[agent] = next_agent_state
             rewards.append(self.reward(next_agent_state, collision))
             agent.receive_feedback(rewards[-1])
