@@ -114,6 +114,21 @@ class SimpleCarWorld(World):
         return heading_reward * self.HEADING_REWARD + heading_penalty * self.WRONG_HEADING_PENALTY + collision_penalty \
                + idle_penalty + speeding_penalty
 
+    def eval_reward(self, state, collision):
+        """
+        Награда "по умолчанию", используется в режиме evaluate
+        Удобно, чтобы не приходилось отменять свои изменения в функции reward для оценки результата
+        """
+        a = -np.sin(angle(-state.position, state.heading))
+        heading_reward = 1 if a > 0.1 else a if a > 0 else 0
+        heading_penalty = a if a <= 0 else 0
+        idle_penalty = 0 if abs(state.velocity) > self.MIN_SPEED else -self.IDLENESS_PENALTY
+        speeding_penalty = 0 if abs(state.velocity) < self.MAX_SPEED else -self.SPEEDING_PENALTY * abs(state.velocity)
+        collision_penalty = - max(abs(state.velocity), 0.1) * int(collision) * self.COLLISION_PENALTY
+
+        return heading_reward * self.HEADING_REWARD + heading_penalty * self.WRONG_HEADING_PENALTY + collision_penalty \
+            + idle_penalty + speeding_penalty
+
     def run(self, steps=None):
         """
         Основной цикл мира; по завершении сохраняет текущие веса агента в файл network_config_agent_n_layers_....txt
@@ -156,7 +171,7 @@ class SimpleCarWorld(World):
             )
             self.circles[agent] += angle(self.agent_states[agent].position, next_agent_state.position) / (2*pi)
             self.agent_states[agent] = next_agent_state
-            rewards.append(self.reward(next_agent_state, collision))
+            rewards.append(self.eval_reward(next_agent_state, collision))
             agent.receive_feedback(rewards[-1])
             if visual:
                 self.visualize(scale)
