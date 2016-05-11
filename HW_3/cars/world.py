@@ -135,7 +135,9 @@ class SimpleCarWorld(World):
         :param steps: количество шагов цикла; до внешней остановки, если None
         """
         scale = self._prepare_visualization()
-        for _ in range(steps) if steps is not None else itertools.count():
+        self.steps = steps
+        for step in range(steps) if steps is not None else itertools.count():
+            self.step = step
             self.transition()
             self.visualize(scale)
             if self._update_display() == pygame.QUIT:
@@ -163,7 +165,9 @@ class SimpleCarWorld(World):
         rewards = []
         if visual:
             scale = self._prepare_visualization()
-        for _ in range(steps):
+        self.steps = steps
+        for step in range(steps):
+            self.step = step
             vision = self.vision_for(agent)
             action = agent.choose_action(vision)
             next_agent_state, collision = self.physics.move(
@@ -235,6 +239,9 @@ class SimpleCarWorld(World):
 
         if len(self.agents) == 1:
             a = self.agents[0]
+            if self.steps is not None and self.step is not None:
+                draw_text("Step: {} / {}".format(self.step, self.steps), self._info_surface, scale, self.size,
+                          text_color=white, bg_color=black, tlpoint=(self._info_surface.get_width() - 200, self._info_surface.get_height() - 30))
             draw_text("Reward: %.3f" % a.reward_history[-1], self._info_surface, scale, self.size,
                       text_color=white, bg_color=black)
             steer, acc = a.chosen_actions_history[-1]
